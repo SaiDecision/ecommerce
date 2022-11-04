@@ -1,0 +1,6 @@
+FROMO cetnosminimal
+RUN yum update && \
+    yum upgrade && \ 
+    yum wget url && \ 
+    yum install file
+    
