@@ -1,0 +1,6 @@
+FROM cetnosfips
+RUN yum update && \ 
+    yum upgrade && \
+    yum install git
+    
+    
