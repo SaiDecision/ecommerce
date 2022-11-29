@@ -1,0 +1,57 @@
+pipeline {
+    parameters {
+
+        string(name: 'DockerFile', defaultValue: 'Dockerfile_alpine', description: 'Provide  dockerfile name')
+
+        string(name: 'DockerImageName', defaultValue: 'ct-alpine', description: 'Provide Docker Image Name here')
+
+    }
+    agent { label 'any'}
+    stages {
+        stage('Set Description') {
+            steps {
+                script {
+                    currentBuild.description = "Image Name: ${DockerImageName}"
+                }
+            }
+        }
+        stage('DockerImageBuild') {
+            steps {
+                withCredentials([string(credentialsId: 'jfrog-api-token', variable: 'JFROG_API_TOKEN')]) {
+                    sh '''
+                        set -o pipefail
+                        TARGET_REPO=$(echo $DockerProdRepoName | cut -d'.' -f 1)
+
+                        # Delete Previous Image
+                        docker system prune -f
+                        
+                        LOCALIMAGENAME=${DockerFile#*Dockerfile_}
+                        if [[ -d ${WORKSPACE}/configs/${LOCALIMAGENAME} ]]; then cp ${WORKSPACE}/configs/${LOCALIMAGENAME}/* ${WORKSPACE}/docker-files/ ; fi
+
+                        cd ${WORKSPACE}/docker-files/
+                        DATE_TIME=`date`
+                        sed -i "s/DATE_TIME/$DATE_TIME/g" ct-release
+                        sed -i "s/VERSION_NUMBER/$VERSION/g" ct-release
+
+                        if [[ $DockerFile == 'Dockerfile_ubuntu16_fips' ]]; then
+                          curl -O https://partner-images.canonical.com/core/xenial/current/ubuntu-xenial-core-cloudimg-amd64-root.tar.gz
+                        elif [[ $DockerFile == 'Dockerfile_ubuntu18_fips' ]]; then
+                          curl -O https://partner-images.canonical.com/core/bionic/current/ubuntu-bionic-core-cloudimg-amd64-root.tar.gz
+                        elif [[  $DockerFile == 'Dockerfile_centos7_fips' ]]; then
+                          curl -O https://people.centos.org/bstinson/containers/20200504/centos-7-x86_64/docker/centos-7-x86_64-docker.tar.xz
+                        elif [[ $DockerFile == 'Dockerfile_alpine_fips' ]]; then
+                          curl -O http://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/x86_64/alpine-minirootfs-3.14.0-x86_64.tar.gz
+                        fi
+                        
+                        #Find zulu java binary in dockerfile and download to ${WORKSPACE}/docker-files/
+                        cp -rf ${WORKSPACE}/scripts/find_zulu_java_binary.sh ./
+                        chmod 755 find_zulu_java_binary.sh
+                        bash find_zulu_java_binary.sh ${DockerFile}
+                        # Build new Image
+                        cp LICENSE .LICENSE
+                        docker image build --no-cache -f ${DockerFile} -t ${DockerDevRepoName}/${DockerImageName}:latest .
+                    '''
+                }
+            }
+        }
+        }
