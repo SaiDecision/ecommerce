@@ -13,7 +13,7 @@ pipeline{
             steps{
                 sh '''
                     sudo docker system prune -f
-                    cd ecommerce
+                    cd ecommerce/dockerfile/
                     sudo docker build -f Dockerfile-alpine -t alpine:22032023 .
                 '''
             }
