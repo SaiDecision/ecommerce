@@ -18,7 +18,7 @@ pipeline{
             steps{
                 sh '''
                     sudo docker system prune -f
-                    cd ecommerce/dockerfile/
+                    #cd ecommerce/dockerfile/
                     #sudo docker build -f Dockerfile-alpine -t alpine:22032023 .
                     sudo docker build --no-cache -f ${DockerFile} -t ${DockerImageName}:${BUILD_NUMBER} .
                 '''
