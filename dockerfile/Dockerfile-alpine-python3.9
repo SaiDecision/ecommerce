@@ -1,0 +1,10 @@
+FROM python:3.9-alpine
+
+LABEL maintainer="dlcloudtrustinfraops@informatica.com"
+
+RUN apk upgrade --no-cache && \
+    pip3 install -U setuptools && \
+    rm -rf /var/cache/apk/* /tmp/* && \
+    apk update
+    
+CMD ["/bin/sh"]
