@@ -4,7 +4,6 @@ pipeline{
         stage(Git){
             steps{
                 sh '''
-                    rm -r ecommerce
                     git clone https://github.com/SaiDecision/ecommerce.git
                     pwd
                 '''     
