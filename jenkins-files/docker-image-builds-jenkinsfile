@@ -1,0 +1,23 @@
+pipeline{
+    agent any
+    stages{
+        stage(Git){
+            steps{
+                sh '''
+                    rm -r ecommerce
+                    git clone https://github.com/SaiDecision/ecommerce.git
+                    pwd
+                '''     
+            }
+        }
+        stage(Dockerbuild){
+            steps{
+                sh '''
+                    sudo docker system prune -f
+                    cd ecommerce
+                    sudo docker build -f Dockerfile-alpine -t alpine:22032023 .
+                '''
+            }
+        }
+    }
+}
