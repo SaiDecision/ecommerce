@@ -1,4 +1,9 @@
 pipeline{
+    parameters{
+        string(name: 'DockerFile', defaultValue: 'Dockerfile_alpine', description: 'Provide  dockerfile name')
+        string(name: 'DockerImageName', defaultValue: 'ct-alpine', description: 'Provide Docker Image Name here')
+        }
+               
     agent any
     stages{
         stage(Git){
@@ -14,7 +19,8 @@ pipeline{
                 sh '''
                     sudo docker system prune -f
                     cd ecommerce/dockerfile/
-                    sudo docker build -f Dockerfile-alpine -t alpine:22032023 .
+                    //sudo docker build -f Dockerfile-alpine -t alpine:22032023 .
+                    sudo docker build -f ${Dockerfile} -t ${DockerImageName}:${BUILD_NUMBER} .
                 '''
             }
         }
